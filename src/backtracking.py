@@ -1,28 +1,66 @@
-def job_sequencing(jobs, t):
-    #ordenar todos os jobs em ordem decrescente de lucro
-    jobs.sort(key=lambda x: x[2], reverse=True)
-
-    #Criar um array para os slots de tempo (agenda)
-    # Inicializamos tudo como vazio
-    result = [None] * t
-    slot = [False] * t
-
-    lucro_total = 0
-
-    for i in range(len(jobs)):
-        #tentar encaixar o job do seu deadline máximo para trás
-        for j in range(min(t, jobs[i][1]) - 1, -1, -1):
-            
-            #se o slot estiver livre, aloca o job
-            if slot[j] is False:
-                slot[j] = True
-                result[j] = jobs[i][0]
-                lucro_total += jobs[i][2]
-                break
-
-    return result, lucro_total
+best_profit = 0
+best_schedule = None
 
 
-if __name__ == "__main__":
-    job_sequencing()
+def backtrack_bb(jobs, idx, schedule, used, current_profit, remaining_profit):
+    global best_profit, best_schedule
 
+    # PODA (BOUND)
+    if current_profit + remaining_profit <= best_profit:
+        return
+
+    if idx == len(jobs):
+        if current_profit > best_profit:
+            best_profit = current_profit
+            best_schedule = schedule.copy()
+        return
+
+    job_id, deadline, profit = jobs[idx]
+
+    # tenta colocar
+    for t in range(deadline - 1, -1, -1):
+        if not used[t]:
+            used[t] = True
+            schedule[t] = job_id
+
+            backtrack_bb(
+                jobs,
+                idx + 1,
+                schedule,
+                used,
+                current_profit + profit,
+                remaining_profit - profit
+            )
+
+            used[t] = False
+            schedule[t] = None
+            break
+
+    # pula
+    backtrack_bb(
+        jobs,
+        idx + 1,
+        schedule,
+        used,
+        current_profit,
+        remaining_profit - profit
+    )
+
+
+def job_scheduling_backtracking_bb(jobs):
+    global best_profit, best_schedule
+
+    best_profit = 0
+
+    jobs = sorted(jobs, key=lambda x: x[2], reverse=True)
+
+    t = max(job[1] for job in jobs)
+
+    schedule = [None] * t
+    used = [False] * t
+
+    total_profit = sum(job[2] for job in jobs)
+
+    backtrack_bb(jobs, 0, schedule, used, 0, total_profit)
+
+    return best_schedule, best_profit

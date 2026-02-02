@@ -1,15 +1,19 @@
-from backtracking import job_sequencing
+from greedy import job_scheduling_greedy
+from backtracking import job_scheduling_backtracking_bb
+from utils import generate_jobs
 
-#ID, Deadline, Lucro
-jobs = [
-    ('A', 2, 100),
-    ('B', 1, 19),
-    ('C', 2, 27),
-    ('D', 1, 25),
-    ('E', 3, 15)
-]
 
-agenda, lucro = job_sequencing(jobs, 3)
+def main():
+    jobs = generate_jobs(6, seed=1)
 
-print(f"Sequencia de tarefas: {agenda}")
-print(f"Lucro maximo atingido: {lucro}")
+    print("Jobs:", jobs)
+
+    s1, p1 = job_scheduling_greedy(jobs)
+    print("\nGreedy:", s1, "lucro:", p1)
+
+    s2, p2 = job_scheduling_backtracking_bb(jobs)
+    print("Backtracking:", s2, "lucro:", p2)
+
+
+if __name__ == "__main__":
+    main()
